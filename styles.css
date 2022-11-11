@@ -27,7 +27,7 @@ nav {
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
 }
 
 .name-container>input {
@@ -41,6 +41,11 @@ nav {
 
 .name-container>input:hover {
     background-color: rgb(0, 221, 255);
+}
+
+.status {
+    font-weight: bold;
+    font-size: 30px;
 }
 
 .board {
@@ -68,6 +73,14 @@ nav {
 .hover:hover {
     background-color: rgb(0, 221, 255);
     cursor: pointer;
+}
+
+button {
+    padding-left: 15px;
+    padding-right: 15px;
+    border-width: 3px;
+    border-style: solid;
+    border-color: black;
 }
 
 button:hover {

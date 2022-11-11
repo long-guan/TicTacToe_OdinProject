@@ -14,9 +14,19 @@ const counter = (() => {
         }
     }
 
+    // returns which player won
+    function winner() {
+        if (_moveCount % 2 == 0) {
+            return "Player 1 Won!";
+        } else {
+            return "Player 2 Won!";
+        }
+    }
+
     return {
         addCount,
-        xOrO
+        xOrO,
+        winner
     }
 })();
 
@@ -25,8 +35,16 @@ const displayController = (() => {
         this.innerHTML = counter.xOrO();
     }
 
+    function resetDisplay() {
+        console.log("working")
+        for (let square of gameBoard.eventArray) {
+            square.innerHTML = "";
+        }
+    }
+
     return {
-       update
+       update,
+       resetDisplay
     }
 })();
 
@@ -43,7 +61,8 @@ const gameBoard = (() => {
     const square6 = document.querySelector('.square6');
     const square7 = document.querySelector('.square7');
     const square8 = document.querySelector('.square8');
-
+    const status = document.querySelector(".status");
+    const resetBtn = document.querySelector(".reset");
     const eventArray = [square0, square1, square2, square3, square4, square5, square6, square7, square8];
 
     // matches class name of UI to board and returns the key
@@ -55,6 +74,7 @@ const gameBoard = (() => {
         }
     }
 
+    // checks for 3 in a row
     function _checkWin() {
         let topLeft = board.topLeft;
         let topMid = board.topMid;
@@ -67,24 +87,41 @@ const gameBoard = (() => {
         let botRight = board.botRight;
         // horizontal wins
         if (topLeft == board.topMid && topLeft == topRight) {
-            console.log('win');
+            status.innerHTML = counter.winner();
         } else if (midLeft == midMid && midLeft == midRight) {
-            console.log('win');
-        } else if (botleft == botMid && botLeft == botRight) {
-            console.log('win');
+            status.innerHTML = counter.winner();
+        } else if (botLeft == botMid && botLeft == botRight) {
+            status.innerHTML = counter.winner();
         // vertical wins
         } else if (topMid == midMid && topMid == botMid) {
-            console.log('win');
+            status.innerHTML = counter.winner();
         } else if (topRight == midRight && topRight == botRight) {
-            console.log('win');
+            status.innerHTML = counter.winner();
         }  else if (topLeft == midLeft && topLeft == botLeft) {
-                console.log('win');
+            status.innerHTML = counter.winner();
         // diagonal wins
         } else if (topLeft == midMid && topLeft == botRight) {
-            console.log('win');
+            status.innerHTML = counter.winner();
         } else if (topRight == midMid && topRight == botLeft) {
-            console.log('win');
+            status.innerHTML = counter.winner();
         }
+    }
+
+    resetBtn.addEventListener("click", reset);
+
+    // sets key to correspond to index
+    function resetBoard() {
+        let index = 0;
+        for (let [key, value] of Object.entries(board)) {
+            board[key] = index;
+            index++;
+        }
+    }
+
+    // reset everything
+    function reset() {
+        resetBoard();
+        displayController.resetDisplay();
     }
 
     // updates board after a move
@@ -99,8 +136,8 @@ const gameBoard = (() => {
         event.addEventListener('click', ()=> {
             event.classList.remove('hover');
             _updateData(event.className[6]);
-            counter.addCount();
             _checkWin();
+            counter.addCount();
         }, {once:true});
     };
 
