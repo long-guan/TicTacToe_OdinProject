@@ -3,6 +3,7 @@ const counter = (() => {
 
     function addCount() {
         _moveCount++;
+        console.log(_moveCount);
     }
 
     // alternate X and O
@@ -17,34 +18,118 @@ const counter = (() => {
     // returns which player won
     function winner() {
         if (_moveCount % 2 == 0) {
-            return "Player 1 Won!";
+            return "player2Won";
         } else {
-            return "Player 2 Won!";
+            return "player1Won";
+        }
+    }
+
+    function turn() {
+        if (_moveCount % 2 == 0) {
+            return "player1Turn";
+        } else {
+            return "player2Turn";
+        }
+    }
+
+    function reset() {
+        _moveCount = 0;
+    }
+
+    function tie() {
+        if (_moveCount == 9) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function zero() {
+        if (_moveCount == 0) {
+            return true;
+        } else {
+            return false;
         }
     }
 
     return {
         addCount,
         xOrO,
-        winner
+        winner,
+        reset,
+        turn,
+        tie,
+        zero
     }
 })();
 
 const displayController = (() => {
-    function update() {
+    const status = document.querySelector(".status");
+    const player1Input = document.querySelector(".player1");
+    const player2Input = document.querySelector(".player2");
+
+    player1Input.addEventListener("input", updateStatusTurn);
+    player2Input.addEventListener("input", updateStatusTurn);
+
+    function turn() {
         this.innerHTML = counter.xOrO();
     }
 
     function resetDisplay() {
-        console.log("working")
         for (let square of gameBoard.eventArray) {
             square.innerHTML = "";
         }
+        if (player1Input.value == "") {
+            status.innerHTML = "Player 1's Turn";
+        } else {
+            status.innerHTML = String(player1Input.value) + "'s Turn";
+        }
+    }
+
+    function updateStatusWon() {
+        if (counter.winner() == "player1Won") {
+            if (player1Input.value == "") {
+                status.innerHTML = "Player 1 Won!";
+            } else {
+                status.innerHTML = String(player1Input.value) + " Won!";
+            }
+        } else {
+            if (player2Input.value == "") {
+                status.innerHTML = "Player 2 Won!";
+            } else {
+                status.innerHTML = String(player2Input.value) + " Won!";
+            }
+        }
+    }
+
+    function updateStatusTurn() {
+        if (counter.tie() != true) {
+            if (counter.turn() == "player1Turn") {
+                if (player1Input.value == "") {
+                    status.innerHTML = "Player 1's Turn";
+                } else {
+                    status.innerHTML = String(player1Input.value) + "'s Turn";
+                }
+            } else {
+                if (player2Input.value == "") {
+                    status.innerHTML = "Player 2's Turn";
+                } else {
+                    status.innerHTML = String(player2Input.value) + "'s Turn";
+                }
+            }
+        }
+    }
+
+    function updateStatusTie() {
+        status.innerHTML = "It's a Tie!";
     }
 
     return {
-       update,
-       resetDisplay
+       turn,
+       resetDisplay,
+       updateStatusWon,
+       updateStatusTurn,
+       updateStatusTie
     }
 })();
 
@@ -61,7 +146,6 @@ const gameBoard = (() => {
     const square6 = document.querySelector('.square6');
     const square7 = document.querySelector('.square7');
     const square8 = document.querySelector('.square8');
-    const status = document.querySelector(".status");
     const resetBtn = document.querySelector(".reset");
     const eventArray = [square0, square1, square2, square3, square4, square5, square6, square7, square8];
 
@@ -87,23 +171,51 @@ const gameBoard = (() => {
         let botRight = board.botRight;
         // horizontal wins
         if (topLeft == board.topMid && topLeft == topRight) {
-            status.innerHTML = counter.winner();
+            square0.classList.add("blue-background");
+            square1.classList.add("blue-background");
+            square2.classList.add("blue-background");
+            removeGameOver();
         } else if (midLeft == midMid && midLeft == midRight) {
-            status.innerHTML = counter.winner();
+            square3.classList.add("blue-background");
+            square4.classList.add("blue-background");
+            square5.classList.add("blue-background");
+            removeGameOver();
         } else if (botLeft == botMid && botLeft == botRight) {
-            status.innerHTML = counter.winner();
+            square6.classList.add("blue-background");
+            square7.classList.add("blue-background");
+            square8.classList.add("blue-background");
+            removeGameOver();
         // vertical wins
         } else if (topMid == midMid && topMid == botMid) {
-            status.innerHTML = counter.winner();
+            square0.classList.add("blue-background");
+            square3.classList.add("blue-background");
+            square6.classList.add("blue-background");
+            removeGameOver();
         } else if (topRight == midRight && topRight == botRight) {
-            status.innerHTML = counter.winner();
+            square1.classList.add("blue-background");
+            square4.classList.add("blue-background");
+            square7.classList.add("blue-background");
+            removeGameOver();
         }  else if (topLeft == midLeft && topLeft == botLeft) {
-            status.innerHTML = counter.winner();
+            square2.classList.add("blue-background");
+            square5.classList.add("blue-background");
+            square8.classList.add("blue-background");
+            removeGameOver();
         // diagonal wins
         } else if (topLeft == midMid && topLeft == botRight) {
-            status.innerHTML = counter.winner();
+            square0.classList.add("blue-background");
+            square4.classList.add("blue-background");
+            square8.classList.add("blue-background");
+            removeGameOver();
         } else if (topRight == midMid && topRight == botLeft) {
-            status.innerHTML = counter.winner();
+            square2.classList.add("blue-background");
+            square4.classList.add("blue-background");
+            square6.classList.add("blue-background");
+            removeGameOver();
+        } else if (counter.tie() == true) {
+            displayController.updateStatusTie();
+        } else {
+            displayController.updateStatusTurn();
         }
     }
 
@@ -118,10 +230,21 @@ const gameBoard = (() => {
         }
     }
 
-    // reset everything
+    // reset everything and readd eventListeners
     function reset() {
         resetBoard();
         displayController.resetDisplay();
+        removeListener();
+        addListeners();
+        addHover();
+        counter.reset();
+        resetBackground();
+    }
+
+    function resetBackground() {
+        for (let square of eventArray) {
+            square.classList.remove("blue-background");
+        }
     }
 
     // updates board after a move
@@ -130,15 +253,63 @@ const gameBoard = (() => {
     }
 
 
-    // add event listeners
+    // remove all eventListeners
+    function removeListener() {
+        for (let square of eventArray) {
+            square.removeEventListener("click", addClickEvents);
+            square.removeEventListener("click", displayController.turn);
+        }
+    }
+
+    // add eventListeners
+    function addListeners() {
+        for (let event of eventArray) {
+            event.addEventListener('click', displayController.turn, {once: true});
+            event.addEventListener('click', addClickEvents, {once:true});
+        };
+    }
+
+    // add hover if square doesn't have hover class
+    function addHover() {
+        for (let event of eventArray) {
+            if (event.classList.contains("hover")) {
+                continue;
+            } else {
+                event.classList.add("hover");
+            }
+        };
+    }
+
+    // when game is won, remove all game inputs
+    function removeGameOver() {
+        removeHover();
+        removeListener();
+        displayController.updateStatusWon();
+    }
+
+    // remove hover for all squares
+    function removeHover() {
+        for (let event of eventArray) {
+            if (event.classList.contains("hover")) {
+                event.classList.remove("hover");
+            } else {
+                continue;
+            }
+        };
+    }
+
+    // once clicked, remove hover, update board, and check for win
+    function addClickEvents() {
+        this.classList.remove('hover');
+        _updateData(this.className[6]);
+        counter.addCount();
+        _checkWin();
+    }
+
+    // initializes event listeners
     for (let event of eventArray) {
-        event.addEventListener('click', displayController.update, {once: true});
-        event.addEventListener('click', ()=> {
-            event.classList.remove('hover');
-            _updateData(event.className[6]);
-            _checkWin();
-            counter.addCount();
-        }, {once:true});
+        event.addEventListener('click', displayController.turn, {once: true});
+        event.addEventListener('click', addClickEvents, {once:true});
     };
 
     return {
